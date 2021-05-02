@@ -1,0 +1,326 @@
+\documentclass[12pt]{article}
+ 
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amsthm,amssymb, mathtools}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{fixltx2e}
+\usepackage[shortlabels]{enumitem}
+ 
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\Q}{\mathbb{Q}}
+
+\newenvironment{theorem}[2][Theorem]{\begin{trivlist}
+\item[\hskip \labelsep {\bfseries #1}\hskip \labelsep {\bfseries #2.}]}{\end{trivlist}}
+\newenvironment{lemma}[2][Lemma]{\begin{trivlist}
+\item[\hskip \labelsep {\bfseries #1}\hskip \labelsep {\bfseries #2.}]}{\end{trivlist}}
+\newenvironment{exercise}[2][Exercise]{\begin{trivlist}
+\item[\hskip \labelsep {\bfseries #1}\hskip \labelsep {\bfseries #2.}]}{\end{trivlist}}
+\newenvironment{problem}[2][Problem]{\begin{trivlist}
+\item[\hskip \labelsep {\bfseries #1}\hskip \labelsep {\bfseries #2.}]}{\end{trivlist}}
+\newenvironment{question}[2][Question]{\begin{trivlist}
+\item[\hskip \labelsep {\bfseries #1}\hskip \labelsep {\bfseries #2.}]}{\end{trivlist}}
+\newenvironment{corollary}[2][Corollary]{\begin{trivlist}
+\item[\hskip \labelsep {\bfseries #1}\hskip \labelsep {\bfseries #2.}]}{\end{trivlist}}
+\newcommand{\textfrac}[2]{\dfrac{\text{#1}}{\text{#2}}}
+
+\begin{document}
+
+\title{Ch. 9 - Support Vector Machines}
+
+\author{Chris Hayduk}
+\date{\today}
+
+\maketitle
+
+<<echo=F, results = 'hide', warning=FALSE, message=FALSE>>=
+# set the global chunk options
+opts_chunk$set(message=FALSE, # don't print R messages in pdf -- CHANGE TO FALSE WHEN SUBMITTING FINAL VERSION!!!
+               warning=FALSE) # don't print warnings in pdf -- CHANGE TO FALSE WHEN SUBMITTING FINAL VERSION!!!
+
+# load .RData files, .R files, etc.
+# R packages required
+suppressMessages(library(tidyverse, quietly=TRUE, warn.conflicts = FALSE, verbose=FALSE))
+suppressMessages(library(ISLR, quietly=TRUE, warn.conflicts = FALSE, verbose=FALSE))
+suppressMessages(library(splines, quietly=TRUE, warn.conflicts = FALSE, verbose=FALSE))
+suppressMessages(library(gam, quietly=TRUE, warn.conflicts = FALSE, verbose=FALSE))
+suppressMessages(library(akima, quietly=TRUE, warn.conflicts = FALSE, verbose=FALSE))
+suppressMessages(library(tree, quietly=TRUE, warn.conflicts = FALSE, verbose=FALSE))
+suppressMessages(library(MASS, quietly=TRUE, warn.conflicts = FALSE, verbose=FALSE))
+suppressMessages(library(randomForest, quietly=TRUE, warn.conflicts = FALSE, verbose=FALSE))
+suppressMessages(library(gbm, quietly=TRUE, warn.conflicts = FALSE, verbose=FALSE))
+suppressMessages(library(e1071, quietly=TRUE, warn.conflicts = FALSE, verbose=FALSE))
+suppressMessages(library(LiblineaR, quietly=TRUE, warn.conflicts = FALSE, verbose=FALSE))
+suppressMessages(library(ROCR, quietly=TRUE, warn.conflicts = FALSE, verbose=FALSE))
+@
+
+\section{Support Vector Classifier}
+
+The \texttt{e1071} library contains implementations for a number of statistical learning methods. In particular, the \texttt{svm()} function can be used to fit a support vector classifier when the argument \textt{kernel=''linear``} is used. A \texttt{cost} argument allows us to specify the cost of a violation to the margin. When the \texttt{cost} argument is small, then the margins will be wide and many support vectors will be on the margin or will violate the margin. When the \texttt{cost} argument is large, then the margins will be narrow and there will be few support vectors on the margin of violating the margin.
+
+We now use the \texttt{svm()} function to fit the support vector classifier for a given value of the \texttt{cost} parameter. Here we demonstrate the use of this function on a two-dimensional example so that we can plot the resulting decision boundary. We begin by generating the observations which belong to two classes, and checking whether the classes are linearly separable.
+
+<<>>=
+set.seed(1)
+x=matrix(rnorm(20*2), ncol=2)
+y=c(rep(-1,10), rep(1,10))
+x[y==1,]=x[y==1,]+1
+plot(x, col=(3-y))
+@
+
+They are not. Next, we fit the support vector classifier. Note that in order for the \texttt{svm()} function to perform classification (as opposed to SVM-based regression), we must encode the response as a factor variable. We now create a data frame with the response coded as a factor.
+
+<<>>=
+dat = data.frame(x=x, y=as.factor(y))
+svmfit=svm(y~., data=dat, kernel="linear", cost=10,
+           scale=FALSE)
+@
+
+The argument \texttt{scale=FALSE} tells the \texttt{svm()} function not to scale each feature to have mean zero or standard deviation one; depending on the application, one might prefer to use \texttt{scale=TRUE}.
+
+We can now plo the support vector classifier obtained:
+
+<<>>=
+plot(svmfit, dat)
+@
+
+Note that the two arguments to the \texttt{plot.svm()} function are the output of the call to \texttt{svm()}, as well as the data used in the call to \texttt{svm()}. The region of feature space that will be assigned to the $-1$ class is shown in light blue, and the region that will be assigned to the $+1$ class is shown in purple. The decision boundary between the two classes is linear (because we used the argument \texttt{kernel=''linear``}), though due to the way in which the plotting function is implemented in this library the decision boundary looks somewhat jagged in the plot. (Note that here the second feature is plotted on the x-axis and the first feature is plotted on the y-axis, in contrast to the behavior of the usual \texttt{plot()} function in \texttt{R}.) The support vectors are plotted as crosses and the remaining observations are plotted as circles; we see here that there are seven support vectors. We can determine their identities as follows:
+
+<<>>=
+svmfit$index
+@
+
+We can obtain some basic information about the support vector classifier fit using the \texttt{summary()} command:
+
+<<>>=
+summary(svmfit)
+@
+
+This tells us, for instance, that a linear kernel was used with \texttt{cost=10}, and that there were seven support vectors, four in one class and three in the other.
+
+What if we instead used a smaller value of the cost parameter?
+
+<<>>=
+svmfit = svm(y~., data=dat, kernel = "linear", 
+             cost = 0.1, scale =FALSE)
+
+plot(svmfit,dat)
+svmfit$index
+@
+
+Now that a smaller value of the cost parameter is being used, we obtain a larger number of support vectors, because the margin is now wider. Unfortunately, the \texttt{svm()} function does not explicitly output the coefficients of the linear decision boundary obtained when the support vector classifier is fit, nor does it output the width of the margin.
+
+The \texttt{e1071} library includes a built-in function, \texttt{tune()}, to perform cross-validation. By default, \texttt{tune()} performs ten-fold cross-validation on a set of models of interest. In order to use this function, we pass in relevant information about the set of models that are under consideration. The following command indicates that we want to compare SVMs with a linear kernel, using a range of values of the \texttt{cost} parameter.
+
+<<>>=
+set.seed(1)
+tune.out = tune(svm, y~., data=dat,
+                kernel="linear",
+                ranges = list(cost=c(0.001, 0.01, 
+                                     0.1, 1, 5, 
+                                     10, 100))
+@
+
+We can easily access the cross-validation errors for each of these models using the \texttt{summary()} command:
+
+<<>>=
+summary(tune.out)
+@
+
+We see that \texttt{cost=0.1} results in the lowest cross-validation error rate. The \texttt{tune()} function stores the best model obtained, which can be accessed as follows:
+
+<<>>=
+bestmod = tune.out$best.model
+summary(bestmod)
+@
+
+The \texttt{predict()} function can be used to predict the class label on a set of test observations, at any given value of the cost parameter. We begin by generating a test data set.
+
+<<>>=
+xtest = matrix(rnorm(20*2), ncol=2)
+ytest = sample(c(-1,1), 20,rep=TRUE)
+xtest[ytest==1,]=xtest[ytest==1,]+1
+testdat=data.frame(x=xtest, y=as.factor(ytest))
+@
+
+Now we predict the class labels of these test observations. Here we use the model obtained through cross-validation in order to make predictions.
+
+<<>>=
+ypred=predict(bestmod, testdat)
+table(predict=ypred, truth=testdat$y)
+@
+
+Thus, with this value of \texttt{cost}, 19 of the test observations are correctly classified. What if we had instead used \texttt{cost=0.01}?
+
+<<>>=
+svmfit=svm(y~., data=dat, kernel="linear",
+           cost=0.01, scale=FALSE)
+
+ypred=predict(svmfit, testdat)
+table(predict=ypred, truth=testdat$y)
+@
+
+In this case, one additional observation is misclassified.
+
+Now consider a situation in which the two classes are linearly separable. Then we can find a separating hyperplane using the \texttt{svm()} function. We first further separate the two classes in our simulated data so that they are linearly separable:
+
+<<>>=
+x[y==1,]=x[y==1,]+0.5
+plot(x, col=(y+5)/2, pch=19)
+@
+
+Now the observations are just barely linearly separable. We fit the support vector classifier and plot the resulting hyperplane, using a very large value of \texttt{cost} so that no observations are misclassified.
+
+<<>>=
+dat = data.frame(x=x, y=as.factor(y))
+svmfit= svm(y~., data = dat, 
+            kernel = "linear", cost =1e5)
+
+summary(svmfit)
+@
+
+No training errors were made and only three support vectors were used. However, we can see from the figure that the margin is very narrow (because the observations that are not support vectors, indicated as circles, are very close to the decision boundary.) It seems likely that this model will perform poorly on test data. We now try a smaller value of \texttt{cost}:
+
+<<>>=
+svmfit=svm(y~., data=dat, kernel="linear", cost=1)
+summary(svmfit)
+plot(svmfit,dat)
+@
+
+Using \texttt{cost=1}, we misclassify a training observation, but we also obtain a much wider margin and make use of seven support vectors. It seems likely that this model will perform better on test data than the model with \texttt{cost=1e5}.
+
+\newpage
+\section{Support Vector Machine}
+
+In order to fit an SVM using a non-linear kernel, we once again use the \texttt{svm()} function. However, we now use a different value of the parameter \texttt{kernel}. We first generate some data with a non-linear class boundary, as follows:
+
+<<>>=
+set.seed(1)
+x=matrix(rnorm(200*2), ncol=2)
+x[1:100,]=x[1:100,]+2
+x[101:150,]=x[101:150,]-2
+y=c(rep(1,150),rep(2,50))
+dat=data.frame(x=x, y=as.factor(y))
+@
+
+Plotting the data makes it clear that the class boundary is indeed non-linear:
+
+<<>>=
+plot(x, col=y)
+@
+
+The data is randomly split into training and testing groups. We then fit the training data using the \texttt{svm()} function with a radial kernel and $\gamma = 1$:
+
+<<>>=
+train = sample(200,100)
+svmfit=svm(y~., data=dat[train,],
+           kernel="radial", gamma=1,
+           cost=1)
+plot(svmfit, dat[train,])
+@
+
+The plot shows that the resulting SVM has a decidedly non-linear boundary. The \texttt{summary()} function can be used to obtain some information about the SVM fit:
+
+<<>>=
+summary(svmfit)
+@
+
+We can see from the figure that there are a fair number of training errors in this SVM fit. If we increase the value of \texttt{cost}, we can reduce the number of training errors. However, this comes a the price of a more irregular decision boundary that seems to be at risk of overfitting the data.
+
+<<>>=
+svmfit=svm(y~., data=dat[train,],
+           kernel="radial",gamma=1,
+           cost=1e5)
+
+plot(svmfit, dat[train,])
+@
+
+We can perform cross-validation using \texttt{tune()} to select the best choice of $\gamma$ and \texttt{cost} for an SVM with a radial kernel:
+
+<<>>=
+set.seed(1)
+tune.out = tune(svm, y~., data=dat[train,],
+                kernel="radial",
+                ranges=list(cost=c(0.1,1,
+                                   10,100,
+                                   1000)),
+                gamma=c(0.5,1,2,3,4))
+
+summary(tune.out)
+@
+
+Therefore, the best choice of parameters involves \texttt{cost=1} and \texttt{gamma=2}. We can view the test set predictions for this model by applying the \texttt{predict()} function to the data. Notice that to do this, we subset the dataframe \texttt{dat} using \texttt{-train} as an index set.
+
+<<>>=
+table(true=dat[-train,"y"], 
+      pred=predict(tune.out$best.model,
+                   newdata=dat[-train,]))
+@
+
+\newpage
+\section{ROC Curves}
+
+We first write a short function to plot an ROC curve given a vector containing a numerical score for each observation, \texttt{pred}, and a vector containing the class label for each observation, \texttt{truth}.
+
+<<>>=
+rocplot=function(pred, truth, ...){
+  predob= prediction(pred,truth)
+  perf=performance(predob, "tpr", "fpr")
+  plot(perf,...)
+}
+@
+
+SVMs and support vector classifiers output class labels for each observation. However, it is also possible to obtain \textit{fitted values} for each observation, which are the numerical scores used to obtain the class labels. For instance, in the case of a support vector classifier, the fitted value for an observation $X = (X_1, X_2, \ldots, X_p)^T$ takes the form $\hat{\beta}_0 + \hat{\beta}_1X_1 + \hat{\beta}_2X_2 + \cdots + \hat{\beta}_p X_p$.
+
+For an SVM with a non-linear kernel, in essence, the sign of the fitted value determines on which side of the decision boundary the observation lies. Therefore, the relationship between the fitted value and the class prediction for a given observation is simple: if the fitted value exceeds zero then the observation is assigned to one class, and if it is less than zero then it is assigned to the other other. In order to botain the fitted values for a given SVM model fit, we use \texttt{decision.values=TRUE} when fitting \texttt{svm()}. Then the \texttt{predict()} function will output the fitted values.
+
+<<>>=
+svmfit.opt=svm(y~., data=dat[train,],
+               kernel="radial",
+               gamma=2, cost=1,
+               decision.values=T)
+
+fitted=attributes(predict(svmfit.opt,dat[train,],
+                          decision.values=TRUE))$decision.values
+@
+
+Now we can produce the ROC plot.
+
+<<>>=
+par(mfrow=c(1,2))
+rocplot(fitted, dat[train,"y"],
+        main="Training Data")
+@
+
+SVM appears to be producing accurate prediction. By increasing $\gamma$, we can produce a more flexible fit and generate further improvements in accuracy.
+
+<<>>=
+svmfit.flex=svm(y~., data=dat[train,],
+                kernel="radial",
+                gamma=50, cost=1, decision.values=T)
+fitted= attributes(predict(svmfit,flex, dat[train,],
+                           decision.values=T))$decision.values
+rocplot(fitted,dat[train,"y"], add=T,
+        col="red")
+@
+
+However, these ROC curves are all on the training data. We are really more interested in the level of prediction accuracy on the test data. When we compute the ROC curves on the test data, the model with $\gamma=2$ appears to provide the most accurate results.
+
+<<>>=
+fitted = attributes(predict(svmfit.opt,
+                            dat[-train,],
+                            decision.values=T))$decision.values
+
+rocplot(fitted,dat[-train,"y"], main="Test Data")
+fitted=attributes(predict(svmfit.flex, dat[-train,],
+                          decision.values=T))$decision.values
+
+rocplot(fitted, dat[-train,"y"], add=T, col="red")
+@
+
+\newpage
+\section{SVM with Multiple Classes}
+
+\end{document}
