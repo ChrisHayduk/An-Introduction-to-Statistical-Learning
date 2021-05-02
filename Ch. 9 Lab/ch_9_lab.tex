@@ -1,0 +1,812 @@
+\documentclass[12pt]{article}\usepackage[]{graphicx}\usepackage[]{color}
+% maxwidth is the original width if it is less than linewidth
+% otherwise use linewidth (to make sure the graphics do not exceed the margin)
+\makeatletter
+\def\maxwidth{ %
+  \ifdim\Gin@nat@width>\linewidth
+    \linewidth
+  \else
+    \Gin@nat@width
+  \fi
+}
+\makeatother
+
+\definecolor{fgcolor}{rgb}{0.345, 0.345, 0.345}
+\newcommand{\hlnum}[1]{\textcolor[rgb]{0.686,0.059,0.569}{#1}}%
+\newcommand{\hlstr}[1]{\textcolor[rgb]{0.192,0.494,0.8}{#1}}%
+\newcommand{\hlcom}[1]{\textcolor[rgb]{0.678,0.584,0.686}{\textit{#1}}}%
+\newcommand{\hlopt}[1]{\textcolor[rgb]{0,0,0}{#1}}%
+\newcommand{\hlstd}[1]{\textcolor[rgb]{0.345,0.345,0.345}{#1}}%
+\newcommand{\hlkwa}[1]{\textcolor[rgb]{0.161,0.373,0.58}{\textbf{#1}}}%
+\newcommand{\hlkwb}[1]{\textcolor[rgb]{0.69,0.353,0.396}{#1}}%
+\newcommand{\hlkwc}[1]{\textcolor[rgb]{0.333,0.667,0.333}{#1}}%
+\newcommand{\hlkwd}[1]{\textcolor[rgb]{0.737,0.353,0.396}{\textbf{#1}}}%
+\let\hlipl\hlkwb
+
+\usepackage{framed}
+\makeatletter
+\newenvironment{kframe}{%
+ \def\at@end@of@kframe{}%
+ \ifinner\ifhmode%
+  \def\at@end@of@kframe{\end{minipage}}%
+  \begin{minipage}{\columnwidth}%
+ \fi\fi%
+ \def\FrameCommand##1{\hskip\@totalleftmargin \hskip-\fboxsep
+ \colorbox{shadecolor}{##1}\hskip-\fboxsep
+     % There is no \\@totalrightmargin, so:
+     \hskip-\linewidth \hskip-\@totalleftmargin \hskip\columnwidth}%
+ \MakeFramed {\advance\hsize-\width
+   \@totalleftmargin\z@ \linewidth\hsize
+   \@setminipage}}%
+ {\par\unskip\endMakeFramed%
+ \at@end@of@kframe}
+\makeatother
+
+\definecolor{shadecolor}{rgb}{.97, .97, .97}
+\definecolor{messagecolor}{rgb}{0, 0, 0}
+\definecolor{warningcolor}{rgb}{1, 0, 1}
+\definecolor{errorcolor}{rgb}{1, 0, 0}
+\newenvironment{knitrout}{}{} % an empty environment to be redefined in TeX
+
+\usepackage{alltt}
+ 
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amsthm,amssymb, mathtools}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{fixltx2e}
+\usepackage[shortlabels]{enumitem}
+ 
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\Q}{\mathbb{Q}}
+
+\newenvironment{theorem}[2][Theorem]{\begin{trivlist}
+\item[\hskip \labelsep {\bfseries #1}\hskip \labelsep {\bfseries #2.}]}{\end{trivlist}}
+\newenvironment{lemma}[2][Lemma]{\begin{trivlist}
+\item[\hskip \labelsep {\bfseries #1}\hskip \labelsep {\bfseries #2.}]}{\end{trivlist}}
+\newenvironment{exercise}[2][Exercise]{\begin{trivlist}
+\item[\hskip \labelsep {\bfseries #1}\hskip \labelsep {\bfseries #2.}]}{\end{trivlist}}
+\newenvironment{problem}[2][Problem]{\begin{trivlist}
+\item[\hskip \labelsep {\bfseries #1}\hskip \labelsep {\bfseries #2.}]}{\end{trivlist}}
+\newenvironment{question}[2][Question]{\begin{trivlist}
+\item[\hskip \labelsep {\bfseries #1}\hskip \labelsep {\bfseries #2.}]}{\end{trivlist}}
+\newenvironment{corollary}[2][Corollary]{\begin{trivlist}
+\item[\hskip \labelsep {\bfseries #1}\hskip \labelsep {\bfseries #2.}]}{\end{trivlist}}
+\newcommand{\textfrac}[2]{\dfrac{\text{#1}}{\text{#2}}}
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\begin{document}
+
+\title{Ch. 9 - Support Vector Machines}
+
+\author{Chris Hayduk}
+\date{\today}
+
+\maketitle
+
+
+
+\section{Support Vector Classifier}
+
+The \texttt{e1071} library contains implementations for a number of statistical learning methods. In particular, the \texttt{svm()} function can be used to fit a support vector classifier when the argument \texttt{kernel=''linear``} is used. A \texttt{cost} argument allows us to specify the cost of a violation to the margin. When the \texttt{cost} argument is small, then the margins will be wide and many support vectors will be on the margin or will violate the margin. When the \texttt{cost} argument is large, then the margins will be narrow and there will be few support vectors on the margin of violating the margin.
+
+We now use the \texttt{svm()} function to fit the support vector classifier for a given value of the \texttt{cost} parameter. Here we demonstrate the use of this function on a two-dimensional example so that we can plot the resulting decision boundary. We begin by generating the observations which belong to two classes, and checking whether the classes are linearly separable.
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlkwd{set.seed}\hlstd{(}\hlnum{1}\hlstd{)}
+\hlstd{x}\hlkwb{=}\hlkwd{matrix}\hlstd{(}\hlkwd{rnorm}\hlstd{(}\hlnum{20}\hlopt{*}\hlnum{2}\hlstd{),} \hlkwc{ncol}\hlstd{=}\hlnum{2}\hlstd{)}
+\hlstd{y}\hlkwb{=}\hlkwd{c}\hlstd{(}\hlkwd{rep}\hlstd{(}\hlopt{-}\hlnum{1}\hlstd{,}\hlnum{10}\hlstd{),} \hlkwd{rep}\hlstd{(}\hlnum{1}\hlstd{,}\hlnum{10}\hlstd{))}
+\hlstd{x[y}\hlopt{==}\hlnum{1}\hlstd{,]}\hlkwb{=}\hlstd{x[y}\hlopt{==}\hlnum{1}\hlstd{,]}\hlopt{+}\hlnum{1}
+\hlkwd{plot}\hlstd{(x,} \hlkwc{col}\hlstd{=(}\hlnum{3}\hlopt{-}\hlstd{y))}
+\end{alltt}
+\end{kframe}
+\includegraphics[width=\maxwidth]{figure/unnamed-chunk-2-1} 
+
+\end{knitrout}
+
+They are not. Next, we fit the support vector classifier. Note that in order for the \texttt{svm()} function to perform classification (as opposed to SVM-based regression), we must encode the response as a factor variable. We now create a data frame with the response coded as a factor.
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{dat} \hlkwb{=} \hlkwd{data.frame}\hlstd{(}\hlkwc{x}\hlstd{=x,} \hlkwc{y}\hlstd{=}\hlkwd{as.factor}\hlstd{(y))}
+\hlstd{svmfit}\hlkwb{=}\hlkwd{svm}\hlstd{(y}\hlopt{~}\hlstd{.,} \hlkwc{data}\hlstd{=dat,} \hlkwc{kernel}\hlstd{=}\hlstr{"linear"}\hlstd{,} \hlkwc{cost}\hlstd{=}\hlnum{10}\hlstd{,}
+           \hlkwc{scale}\hlstd{=}\hlnum{FALSE}\hlstd{)}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
+
+The argument \texttt{scale=FALSE} tells the \texttt{svm()} function not to scale each feature to have mean zero or standard deviation one; depending on the application, one might prefer to use \texttt{scale=TRUE}.
+
+We can now plo the support vector classifier obtained:
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlkwd{plot}\hlstd{(svmfit, dat)}
+\end{alltt}
+\end{kframe}
+\includegraphics[width=\maxwidth]{figure/unnamed-chunk-4-1} 
+
+\end{knitrout}
+
+Note that the two arguments to the \texttt{plot.svm()} function are the output of the call to \texttt{svm()}, as well as the data used in the call to \texttt{svm()}. The region of feature space that will be assigned to the $-1$ class is shown in light blue, and the region that will be assigned to the $+1$ class is shown in purple. The decision boundary between the two classes is linear (because we used the argument \texttt{kernel=''linear``}), though due to the way in which the plotting function is implemented in this library the decision boundary looks somewhat jagged in the plot. (Note that here the second feature is plotted on the x-axis and the first feature is plotted on the y-axis, in contrast to the behavior of the usual \texttt{plot()} function in \texttt{R}.) The support vectors are plotted as crosses and the remaining observations are plotted as circles; we see here that there are seven support vectors. We can determine their identities as follows:
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{svmfit}\hlopt{$}\hlstd{index}
+\end{alltt}
+\begin{verbatim}
+## [1]  1  2  5  7 14 16 17
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
+
+We can obtain some basic information about the support vector classifier fit using the \texttt{summary()} command:
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlkwd{summary}\hlstd{(svmfit)}
+\end{alltt}
+\begin{verbatim}
+## 
+## Call:
+## svm(formula = y ~ ., data = dat, kernel = "linear", cost = 10, scale = FALSE)
+## 
+## 
+## Parameters:
+##    SVM-Type:  C-classification 
+##  SVM-Kernel:  linear 
+##        cost:  10 
+## 
+## Number of Support Vectors:  7
+## 
+##  ( 4 3 )
+## 
+## 
+## Number of Classes:  2 
+## 
+## Levels: 
+##  -1 1
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
+
+This tells us, for instance, that a linear kernel was used with \texttt{cost=10}, and that there were seven support vectors, four in one class and three in the other.
+
+What if we instead used a smaller value of the cost parameter?
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{svmfit} \hlkwb{=} \hlkwd{svm}\hlstd{(y}\hlopt{~}\hlstd{.,} \hlkwc{data}\hlstd{=dat,} \hlkwc{kernel} \hlstd{=} \hlstr{"linear"}\hlstd{,}
+             \hlkwc{cost} \hlstd{=} \hlnum{0.1}\hlstd{,} \hlkwc{scale} \hlstd{=}\hlnum{FALSE}\hlstd{)}
+
+\hlkwd{plot}\hlstd{(svmfit,dat)}
+\end{alltt}
+\end{kframe}
+\includegraphics[width=\maxwidth]{figure/unnamed-chunk-7-1} 
+\begin{kframe}\begin{alltt}
+\hlstd{svmfit}\hlopt{$}\hlstd{index}
+\end{alltt}
+\begin{verbatim}
+##  [1]  1  2  3  4  5  7  9 10 12 13 14 15 16 17 18 20
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
+
+Now that a smaller value of the cost parameter is being used, we obtain a larger number of support vectors, because the margin is now wider. Unfortunately, the \texttt{svm()} function does not explicitly output the coefficients of the linear decision boundary obtained when the support vector classifier is fit, nor does it output the width of the margin.
+
+The \texttt{e1071} library includes a built-in function, \texttt{tune()}, to perform cross-validation. By default, \texttt{tune()} performs ten-fold cross-validation on a set of models of interest. In order to use this function, we pass in relevant information about the set of models that are under consideration. The following command indicates that we want to compare SVMs with a linear kernel, using a range of values of the \texttt{cost} parameter.
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlkwd{set.seed}\hlstd{(}\hlnum{1}\hlstd{)}
+\hlstd{tune.out} \hlkwb{=} \hlkwd{tune}\hlstd{(svm, y}\hlopt{~}\hlstd{.,} \hlkwc{data}\hlstd{=dat,}
+                \hlkwc{kernel}\hlstd{=}\hlstr{"linear"}\hlstd{,}
+                \hlkwc{ranges} \hlstd{=} \hlkwd{list}\hlstd{(}\hlkwc{cost}\hlstd{=}\hlkwd{c}\hlstd{(}\hlnum{0.001}\hlstd{,} \hlnum{0.01}\hlstd{,}
+                                     \hlnum{0.1}\hlstd{,} \hlnum{1}\hlstd{,} \hlnum{5}\hlstd{,}
+                                     \hlnum{10}\hlstd{,} \hlnum{100}\hlstd{)))}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
+
+We can easily access the cross-validation errors for each of these models using the \texttt{summary()} command:
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlkwd{summary}\hlstd{(tune.out)}
+\end{alltt}
+\begin{verbatim}
+## 
+## Parameter tuning of 'svm':
+## 
+## - sampling method: 10-fold cross validation 
+## 
+## - best parameters:
+##  cost
+##   0.1
+## 
+## - best performance: 0.05 
+## 
+## - Detailed performance results:
+##    cost error dispersion
+## 1 1e-03  0.55  0.4377975
+## 2 1e-02  0.55  0.4377975
+## 3 1e-01  0.05  0.1581139
+## 4 1e+00  0.15  0.2415229
+## 5 5e+00  0.15  0.2415229
+## 6 1e+01  0.15  0.2415229
+## 7 1e+02  0.15  0.2415229
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
+
+We see that \texttt{cost=0.1} results in the lowest cross-validation error rate. The \texttt{tune()} function stores the best model obtained, which can be accessed as follows:
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{bestmod} \hlkwb{=} \hlstd{tune.out}\hlopt{$}\hlstd{best.model}
+\hlkwd{summary}\hlstd{(bestmod)}
+\end{alltt}
+\begin{verbatim}
+## 
+## Call:
+## best.tune(method = svm, train.x = y ~ ., data = dat, ranges = list(cost = c(0.001, 
+##     0.01, 0.1, 1, 5, 10, 100)), kernel = "linear")
+## 
+## 
+## Parameters:
+##    SVM-Type:  C-classification 
+##  SVM-Kernel:  linear 
+##        cost:  0.1 
+## 
+## Number of Support Vectors:  16
+## 
+##  ( 8 8 )
+## 
+## 
+## Number of Classes:  2 
+## 
+## Levels: 
+##  -1 1
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
+
+The \texttt{predict()} function can be used to predict the class label on a set of test observations, at any given value of the cost parameter. We begin by generating a test data set.
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{xtest} \hlkwb{=} \hlkwd{matrix}\hlstd{(}\hlkwd{rnorm}\hlstd{(}\hlnum{20}\hlopt{*}\hlnum{2}\hlstd{),} \hlkwc{ncol}\hlstd{=}\hlnum{2}\hlstd{)}
+\hlstd{ytest} \hlkwb{=} \hlkwd{sample}\hlstd{(}\hlkwd{c}\hlstd{(}\hlopt{-}\hlnum{1}\hlstd{,}\hlnum{1}\hlstd{),} \hlnum{20}\hlstd{,}\hlkwc{rep}\hlstd{=}\hlnum{TRUE}\hlstd{)}
+\hlstd{xtest[ytest}\hlopt{==}\hlnum{1}\hlstd{,]}\hlkwb{=}\hlstd{xtest[ytest}\hlopt{==}\hlnum{1}\hlstd{,]}\hlopt{+}\hlnum{1}
+\hlstd{testdat}\hlkwb{=}\hlkwd{data.frame}\hlstd{(}\hlkwc{x}\hlstd{=xtest,} \hlkwc{y}\hlstd{=}\hlkwd{as.factor}\hlstd{(ytest))}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
+
+Now we predict the class labels of these test observations. Here we use the model obtained through cross-validation in order to make predictions.
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{ypred}\hlkwb{=}\hlkwd{predict}\hlstd{(bestmod, testdat)}
+\hlkwd{table}\hlstd{(}\hlkwc{predict}\hlstd{=ypred,} \hlkwc{truth}\hlstd{=testdat}\hlopt{$}\hlstd{y)}
+\end{alltt}
+\begin{verbatim}
+##        truth
+## predict -1 1
+##      -1  9 1
+##      1   2 8
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
+
+Thus, with this value of \texttt{cost}, 19 of the test observations are correctly classified. What if we had instead used \texttt{cost=0.01}?
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{svmfit}\hlkwb{=}\hlkwd{svm}\hlstd{(y}\hlopt{~}\hlstd{.,} \hlkwc{data}\hlstd{=dat,} \hlkwc{kernel}\hlstd{=}\hlstr{"linear"}\hlstd{,}
+           \hlkwc{cost}\hlstd{=}\hlnum{0.01}\hlstd{,} \hlkwc{scale}\hlstd{=}\hlnum{FALSE}\hlstd{)}
+
+\hlstd{ypred}\hlkwb{=}\hlkwd{predict}\hlstd{(svmfit, testdat)}
+\hlkwd{table}\hlstd{(}\hlkwc{predict}\hlstd{=ypred,} \hlkwc{truth}\hlstd{=testdat}\hlopt{$}\hlstd{y)}
+\end{alltt}
+\begin{verbatim}
+##        truth
+## predict -1  1
+##      -1 11  6
+##      1   0  3
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
+
+In this case, one additional observation is misclassified.
+
+Now consider a situation in which the two classes are linearly separable. Then we can find a separating hyperplane using the \texttt{svm()} function. We first further separate the two classes in our simulated data so that they are linearly separable:
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{x[y}\hlopt{==}\hlnum{1}\hlstd{,]}\hlkwb{=}\hlstd{x[y}\hlopt{==}\hlnum{1}\hlstd{,]}\hlopt{+}\hlnum{0.5}
+\hlkwd{plot}\hlstd{(x,} \hlkwc{col}\hlstd{=(y}\hlopt{+}\hlnum{5}\hlstd{)}\hlopt{/}\hlnum{2}\hlstd{,} \hlkwc{pch}\hlstd{=}\hlnum{19}\hlstd{)}
+\end{alltt}
+\end{kframe}
+\includegraphics[width=\maxwidth]{figure/unnamed-chunk-14-1} 
+
+\end{knitrout}
+
+Now the observations are just barely linearly separable. We fit the support vector classifier and plot the resulting hyperplane, using a very large value of \texttt{cost} so that no observations are misclassified.
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{dat} \hlkwb{=} \hlkwd{data.frame}\hlstd{(}\hlkwc{x}\hlstd{=x,} \hlkwc{y}\hlstd{=}\hlkwd{as.factor}\hlstd{(y))}
+\hlstd{svmfit}\hlkwb{=} \hlkwd{svm}\hlstd{(y}\hlopt{~}\hlstd{.,} \hlkwc{data} \hlstd{= dat,}
+            \hlkwc{kernel} \hlstd{=} \hlstr{"linear"}\hlstd{,} \hlkwc{cost} \hlstd{=}\hlnum{1e5}\hlstd{)}
+
+\hlkwd{summary}\hlstd{(svmfit)}
+\end{alltt}
+\begin{verbatim}
+## 
+## Call:
+## svm(formula = y ~ ., data = dat, kernel = "linear", cost = 1e+05)
+## 
+## 
+## Parameters:
+##    SVM-Type:  C-classification 
+##  SVM-Kernel:  linear 
+##        cost:  1e+05 
+## 
+## Number of Support Vectors:  3
+## 
+##  ( 1 2 )
+## 
+## 
+## Number of Classes:  2 
+## 
+## Levels: 
+##  -1 1
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
+
+No training errors were made and only three support vectors were used. However, we can see from the figure that the margin is very narrow (because the observations that are not support vectors, indicated as circles, are very close to the decision boundary.) It seems likely that this model will perform poorly on test data. We now try a smaller value of \texttt{cost}:
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{svmfit}\hlkwb{=}\hlkwd{svm}\hlstd{(y}\hlopt{~}\hlstd{.,} \hlkwc{data}\hlstd{=dat,} \hlkwc{kernel}\hlstd{=}\hlstr{"linear"}\hlstd{,} \hlkwc{cost}\hlstd{=}\hlnum{1}\hlstd{)}
+\hlkwd{summary}\hlstd{(svmfit)}
+\end{alltt}
+\begin{verbatim}
+## 
+## Call:
+## svm(formula = y ~ ., data = dat, kernel = "linear", cost = 1)
+## 
+## 
+## Parameters:
+##    SVM-Type:  C-classification 
+##  SVM-Kernel:  linear 
+##        cost:  1 
+## 
+## Number of Support Vectors:  7
+## 
+##  ( 4 3 )
+## 
+## 
+## Number of Classes:  2 
+## 
+## Levels: 
+##  -1 1
+\end{verbatim}
+\begin{alltt}
+\hlkwd{plot}\hlstd{(svmfit,dat)}
+\end{alltt}
+\end{kframe}
+\includegraphics[width=\maxwidth]{figure/unnamed-chunk-16-1} 
+
+\end{knitrout}
+
+Using \texttt{cost=1}, we misclassify a training observation, but we also obtain a much wider margin and make use of seven support vectors. It seems likely that this model will perform better on test data than the model with \texttt{cost=1e5}.
+
+\newpage
+\section{Support Vector Machine}
+
+In order to fit an SVM using a non-linear kernel, we once again use the \texttt{svm()} function. However, we now use a different value of the parameter \texttt{kernel}. We first generate some data with a non-linear class boundary, as follows:
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlkwd{set.seed}\hlstd{(}\hlnum{1}\hlstd{)}
+\hlstd{x}\hlkwb{=}\hlkwd{matrix}\hlstd{(}\hlkwd{rnorm}\hlstd{(}\hlnum{200}\hlopt{*}\hlnum{2}\hlstd{),} \hlkwc{ncol}\hlstd{=}\hlnum{2}\hlstd{)}
+\hlstd{x[}\hlnum{1}\hlopt{:}\hlnum{100}\hlstd{,]}\hlkwb{=}\hlstd{x[}\hlnum{1}\hlopt{:}\hlnum{100}\hlstd{,]}\hlopt{+}\hlnum{2}
+\hlstd{x[}\hlnum{101}\hlopt{:}\hlnum{150}\hlstd{,]}\hlkwb{=}\hlstd{x[}\hlnum{101}\hlopt{:}\hlnum{150}\hlstd{,]}\hlopt{-}\hlnum{2}
+\hlstd{y}\hlkwb{=}\hlkwd{c}\hlstd{(}\hlkwd{rep}\hlstd{(}\hlnum{1}\hlstd{,}\hlnum{150}\hlstd{),}\hlkwd{rep}\hlstd{(}\hlnum{2}\hlstd{,}\hlnum{50}\hlstd{))}
+\hlstd{dat}\hlkwb{=}\hlkwd{data.frame}\hlstd{(}\hlkwc{x}\hlstd{=x,} \hlkwc{y}\hlstd{=}\hlkwd{as.factor}\hlstd{(y))}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
+
+Plotting the data makes it clear that the class boundary is indeed non-linear:
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlkwd{plot}\hlstd{(x,} \hlkwc{col}\hlstd{=y)}
+\end{alltt}
+\end{kframe}
+\includegraphics[width=\maxwidth]{figure/unnamed-chunk-18-1} 
+
+\end{knitrout}
+
+The data is randomly split into training and testing groups. We then fit the training data using the \texttt{svm()} function with a radial kernel and $\gamma = 1$:
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{train} \hlkwb{=} \hlkwd{sample}\hlstd{(}\hlnum{200}\hlstd{,}\hlnum{100}\hlstd{)}
+\hlstd{svmfit}\hlkwb{=}\hlkwd{svm}\hlstd{(y}\hlopt{~}\hlstd{.,} \hlkwc{data}\hlstd{=dat[train,],}
+           \hlkwc{kernel}\hlstd{=}\hlstr{"radial"}\hlstd{,} \hlkwc{gamma}\hlstd{=}\hlnum{1}\hlstd{,}
+           \hlkwc{cost}\hlstd{=}\hlnum{1}\hlstd{)}
+\hlkwd{plot}\hlstd{(svmfit, dat[train,])}
+\end{alltt}
+\end{kframe}
+\includegraphics[width=\maxwidth]{figure/unnamed-chunk-19-1} 
+
+\end{knitrout}
+
+The plot shows that the resulting SVM has a decidedly non-linear boundary. The \texttt{summary()} function can be used to obtain some information about the SVM fit:
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlkwd{summary}\hlstd{(svmfit)}
+\end{alltt}
+\begin{verbatim}
+## 
+## Call:
+## svm(formula = y ~ ., data = dat[train, ], kernel = "radial", gamma = 1, 
+##     cost = 1)
+## 
+## 
+## Parameters:
+##    SVM-Type:  C-classification 
+##  SVM-Kernel:  radial 
+##        cost:  1 
+## 
+## Number of Support Vectors:  31
+## 
+##  ( 16 15 )
+## 
+## 
+## Number of Classes:  2 
+## 
+## Levels: 
+##  1 2
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
+
+We can see from the figure that there are a fair number of training errors in this SVM fit. If we increase the value of \texttt{cost}, we can reduce the number of training errors. However, this comes a the price of a more irregular decision boundary that seems to be at risk of overfitting the data.
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{svmfit}\hlkwb{=}\hlkwd{svm}\hlstd{(y}\hlopt{~}\hlstd{.,} \hlkwc{data}\hlstd{=dat[train,],}
+           \hlkwc{kernel}\hlstd{=}\hlstr{"radial"}\hlstd{,}\hlkwc{gamma}\hlstd{=}\hlnum{1}\hlstd{,}
+           \hlkwc{cost}\hlstd{=}\hlnum{1e5}\hlstd{)}
+
+\hlkwd{plot}\hlstd{(svmfit, dat[train,])}
+\end{alltt}
+\end{kframe}
+\includegraphics[width=\maxwidth]{figure/unnamed-chunk-21-1} 
+
+\end{knitrout}
+
+We can perform cross-validation using \texttt{tune()} to select the best choice of $\gamma$ and \texttt{cost} for an SVM with a radial kernel:
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlkwd{set.seed}\hlstd{(}\hlnum{1}\hlstd{)}
+\hlstd{tune.out} \hlkwb{=} \hlkwd{tune}\hlstd{(svm, y}\hlopt{~}\hlstd{.,} \hlkwc{data}\hlstd{=dat[train,],}
+                \hlkwc{kernel}\hlstd{=}\hlstr{"radial"}\hlstd{,}
+                \hlkwc{ranges}\hlstd{=}\hlkwd{list}\hlstd{(}\hlkwc{cost}\hlstd{=}\hlkwd{c}\hlstd{(}\hlnum{0.1}\hlstd{,}\hlnum{1}\hlstd{,}
+                                   \hlnum{10}\hlstd{,}\hlnum{100}\hlstd{,}
+                                   \hlnum{1000}\hlstd{)),}
+                \hlkwc{gamma}\hlstd{=}\hlkwd{c}\hlstd{(}\hlnum{0.5}\hlstd{,}\hlnum{1}\hlstd{,}\hlnum{2}\hlstd{,}\hlnum{3}\hlstd{,}\hlnum{4}\hlstd{))}
+
+\hlkwd{summary}\hlstd{(tune.out)}
+\end{alltt}
+\begin{verbatim}
+## 
+## Parameter tuning of 'svm':
+## 
+## - sampling method: 10-fold cross validation 
+## 
+## - best parameters:
+##  cost
+##     1
+## 
+## - best performance: 0.07 
+## 
+## - Detailed performance results:
+##    cost error dispersion
+## 1 1e-01  0.26 0.15776213
+## 2 1e+00  0.07 0.08232726
+## 3 1e+01  0.07 0.08232726
+## 4 1e+02  0.14 0.15055453
+## 5 1e+03  0.11 0.07378648
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
+
+Therefore, the best choice of parameters involves \texttt{cost=1} and \texttt{gamma=2}. We can view the test set predictions for this model by applying the \texttt{predict()} function to the data. Notice that to do this, we subset the dataframe \texttt{dat} using \texttt{-train} as an index set.
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlkwd{table}\hlstd{(}\hlkwc{true}\hlstd{=dat[}\hlopt{-}\hlstd{train,}\hlstr{"y"}\hlstd{],}
+      \hlkwc{pred}\hlstd{=}\hlkwd{predict}\hlstd{(tune.out}\hlopt{$}\hlstd{best.model,}
+                   \hlkwc{newdata}\hlstd{=dat[}\hlopt{-}\hlstd{train,]))}
+\end{alltt}
+\begin{verbatim}
+##     pred
+## true  1  2
+##    1 67 10
+##    2  2 21
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
+
+\newpage
+\section{ROC Curves}
+
+We first write a short function to plot an ROC curve given a vector containing a numerical score for each observation, \texttt{pred}, and a vector containing the class label for each observation, \texttt{truth}.
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{rocplot}\hlkwb{=}\hlkwa{function}\hlstd{(}\hlkwc{pred}\hlstd{,} \hlkwc{truth}\hlstd{,} \hlkwc{...}\hlstd{)\{}
+  \hlstd{predob}\hlkwb{=} \hlkwd{prediction}\hlstd{(pred,truth)}
+  \hlstd{perf}\hlkwb{=}\hlkwd{performance}\hlstd{(predob,} \hlstr{"tpr"}\hlstd{,} \hlstr{"fpr"}\hlstd{)}
+  \hlkwd{plot}\hlstd{(perf,...)}
+\hlstd{\}}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
+
+SVMs and support vector classifiers output class labels for each observation. However, it is also possible to obtain \textit{fitted values} for each observation, which are the numerical scores used to obtain the class labels. For instance, in the case of a support vector classifier, the fitted value for an observation $X = (X_1, X_2, \ldots, X_p)^T$ takes the form $\hat{\beta}_0 + \hat{\beta}_1X_1 + \hat{\beta}_2X_2 + \cdots + \hat{\beta}_p X_p$.
+
+For an SVM with a non-linear kernel, in essence, the sign of the fitted value determines on which side of the decision boundary the observation lies. Therefore, the relationship between the fitted value and the class prediction for a given observation is simple: if the fitted value exceeds zero then the observation is assigned to one class, and if it is less than zero then it is assigned to the other other. In order to botain the fitted values for a given SVM model fit, we use \texttt{decision.values=TRUE} when fitting \texttt{svm()}. Then the \texttt{predict()} function will output the fitted values.
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{svmfit.opt}\hlkwb{=}\hlkwd{svm}\hlstd{(y}\hlopt{~}\hlstd{.,} \hlkwc{data}\hlstd{=dat[train,],}
+               \hlkwc{kernel}\hlstd{=}\hlstr{"radial"}\hlstd{,}
+               \hlkwc{gamma}\hlstd{=}\hlnum{2}\hlstd{,} \hlkwc{cost}\hlstd{=}\hlnum{1}\hlstd{,}
+               \hlkwc{decision.values}\hlstd{=T)}
+
+\hlstd{fitted}\hlkwb{=}\hlkwd{attributes}\hlstd{(}\hlkwd{predict}\hlstd{(svmfit.opt,dat[train,],}
+                          \hlkwc{decision.values}\hlstd{=}\hlnum{TRUE}\hlstd{))}\hlopt{$}\hlstd{decision.values}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
+
+Now we can produce the ROC plot.
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlkwd{par}\hlstd{(}\hlkwc{mfrow}\hlstd{=}\hlkwd{c}\hlstd{(}\hlnum{1}\hlstd{,}\hlnum{2}\hlstd{))}
+\hlkwd{rocplot}\hlstd{(fitted, dat[train,}\hlstr{"y"}\hlstd{],}
+        \hlkwc{main}\hlstd{=}\hlstr{"Training Data"}\hlstd{)}
+
+\hlstd{svmfit.flex}\hlkwb{=}\hlkwd{svm}\hlstd{(y}\hlopt{~}\hlstd{.,} \hlkwc{data}\hlstd{=dat[train,],}
+                \hlkwc{kernel}\hlstd{=}\hlstr{"radial"}\hlstd{,}
+                \hlkwc{gamma}\hlstd{=}\hlnum{50}\hlstd{,} \hlkwc{cost}\hlstd{=}\hlnum{1}\hlstd{,} \hlkwc{decision.values}\hlstd{=T)}
+\hlstd{fitted}\hlkwb{=} \hlkwd{attributes}\hlstd{(}\hlkwd{predict}\hlstd{(svmfit.flex, dat[train,],}
+                           \hlkwc{decision.values}\hlstd{=T))}\hlopt{$}\hlstd{decision.values}
+\hlkwd{rocplot}\hlstd{(fitted,dat[train,}\hlstr{"y"}\hlstd{],} \hlkwc{add}\hlstd{=T,}
+        \hlkwc{col}\hlstd{=}\hlstr{"red"}\hlstd{)}
+
+\hlstd{fitted} \hlkwb{=} \hlkwd{attributes}\hlstd{(}\hlkwd{predict}\hlstd{(svmfit.opt,}
+                            \hlstd{dat[}\hlopt{-}\hlstd{train,],}
+                            \hlkwc{decision.values}\hlstd{=T))}\hlopt{$}\hlstd{decision.values}
+
+\hlkwd{rocplot}\hlstd{(fitted,dat[}\hlopt{-}\hlstd{train,}\hlstr{"y"}\hlstd{],} \hlkwc{main}\hlstd{=}\hlstr{"Test Data"}\hlstd{)}
+\hlstd{fitted}\hlkwb{=}\hlkwd{attributes}\hlstd{(}\hlkwd{predict}\hlstd{(svmfit.flex, dat[}\hlopt{-}\hlstd{train,],}
+                          \hlkwc{decision.values}\hlstd{=T))}\hlopt{$}\hlstd{decision.values}
+
+\hlkwd{rocplot}\hlstd{(fitted, dat[}\hlopt{-}\hlstd{train,}\hlstr{"y"}\hlstd{],} \hlkwc{add}\hlstd{=T,} \hlkwc{col}\hlstd{=}\hlstr{"red"}\hlstd{)}
+\end{alltt}
+\end{kframe}
+\includegraphics[width=\maxwidth]{figure/unnamed-chunk-26-1} 
+
+\end{knitrout}
+
+SVM appears to be producing accurate prediction. By increasing $\gamma$, we can produce a more flexible fit and generate further improvements in accuracy.
+
+However, these ROC curves are all on the training data. We are really more interested in the level of prediction accuracy on the test data. When we compute the ROC curves on the test data, the model with $\gamma=2$ appears to provide the most accurate results.
+
+\newpage
+\section{SVM with Multiple Classes}
+
+If the response is a factor containing more than two levels, then the \texttt{svm()} function will perform multi-class classification using the one-versus-one approach . We explore that setting here by generating a third class of observations.
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlkwd{set.seed}\hlstd{(}\hlnum{1}\hlstd{)}
+\hlstd{x}\hlkwb{=}\hlkwd{rbind}\hlstd{(x,}\hlkwd{matrix}\hlstd{(}\hlkwd{rnorm}\hlstd{(}\hlnum{50}\hlopt{*}\hlnum{2}\hlstd{),} \hlkwc{ncol}\hlstd{=}\hlnum{2}\hlstd{))}
+\hlstd{y}\hlkwb{=}\hlkwd{c}\hlstd{(y,}\hlkwd{rep}\hlstd{(}\hlnum{0}\hlstd{,}\hlnum{50}\hlstd{))}
+\hlstd{x[y}\hlopt{==}\hlnum{0}\hlstd{,}\hlnum{2}\hlstd{]}\hlkwb{=}\hlstd{x[y}\hlopt{==}\hlnum{0}\hlstd{,}\hlnum{2}\hlstd{]}\hlopt{+}\hlnum{2}
+\hlstd{dat}\hlkwb{=}\hlkwd{data.frame}\hlstd{(}\hlkwc{x}\hlstd{=x,} \hlkwc{y}\hlstd{=}\hlkwd{as.factor}\hlstd{(y))}
+\hlkwd{par}\hlstd{(}\hlkwc{mfrow}\hlstd{=}\hlkwd{c}\hlstd{(}\hlnum{1}\hlstd{,}\hlnum{1}\hlstd{))}
+\hlkwd{plot}\hlstd{(x,}\hlkwc{col}\hlstd{=(y}\hlopt{+}\hlnum{1}\hlstd{))}
+\end{alltt}
+\end{kframe}
+\includegraphics[width=\maxwidth]{figure/unnamed-chunk-27-1} 
+
+\end{knitrout}
+
+We now fit an SVM to the data:
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{svmfit}\hlkwb{=}\hlkwd{svm}\hlstd{(y}\hlopt{~}\hlstd{.,} \hlkwc{data}\hlstd{=dat,} \hlkwc{kernel}\hlstd{=}\hlstr{"radial"}\hlstd{,}
+           \hlkwc{cost}\hlstd{=}\hlnum{10}\hlstd{,} \hlkwc{gamma}\hlstd{=}\hlnum{1}\hlstd{)}
+
+\hlkwd{plot}\hlstd{(svmfit,dat)}
+\end{alltt}
+\end{kframe}
+\includegraphics[width=\maxwidth]{figure/unnamed-chunk-28-1} 
+
+\end{knitrout}
+
+The \texttt{e1071} library can also be used to perform support vector regression, if the response vector that is passed in to \texttt{svm()} is numerical rather than a factor.
+
+\newpage
+\section{Application to Gene Expression Data}
+
+We now examine the \texttt{Khan} data set, which consists of a number of tissue samples corresponding to four distinct types of small round blue cell tumors. For each tissue sample, gene expression measurements are available. The data set consists of training data, \texttt{xtrain} and \texttt{ytrain}, and testing data, \texttt{xtest} and \texttt{ytest}.
+
+We examine the dimension of the data:
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlkwd{names}\hlstd{(Khan)}
+\end{alltt}
+\begin{verbatim}
+## [1] "xtrain" "xtest"  "ytrain" "ytest"
+\end{verbatim}
+\begin{alltt}
+\hlkwd{dim}\hlstd{(Khan)}
+\end{alltt}
+\begin{verbatim}
+## NULL
+\end{verbatim}
+\begin{alltt}
+\hlkwd{dim}\hlstd{(Khan}\hlopt{$}\hlstd{xtrain)}
+\end{alltt}
+\begin{verbatim}
+## [1]   63 2308
+\end{verbatim}
+\begin{alltt}
+\hlkwd{dim}\hlstd{(Khan}\hlopt{$}\hlstd{xtest)}
+\end{alltt}
+\begin{verbatim}
+## [1]   20 2308
+\end{verbatim}
+\begin{alltt}
+\hlkwd{length}\hlstd{(Khan}\hlopt{$}\hlstd{ytrain)}
+\end{alltt}
+\begin{verbatim}
+## [1] 63
+\end{verbatim}
+\begin{alltt}
+\hlkwd{length}\hlstd{(Khan}\hlopt{$}\hlstd{ytest)}
+\end{alltt}
+\begin{verbatim}
+## [1] 20
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
+
+This data set consists of expression measurements for 2,308 genes. The training and test sets consist of 63 and 20 observations respectively.
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlkwd{table}\hlstd{(Khan}\hlopt{$}\hlstd{ytrain)}
+\end{alltt}
+\begin{verbatim}
+## 
+##  1  2  3  4 
+##  8 23 12 20
+\end{verbatim}
+\begin{alltt}
+\hlkwd{table}\hlstd{(Khan}\hlopt{$}\hlstd{ytest)}
+\end{alltt}
+\begin{verbatim}
+## 
+## 1 2 3 4 
+## 3 6 6 5
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
+
+We will use a support vector approach to predict cancer subtype using gene expression measurements. In this data set, there are a very large number of features relative to the number of observations. This suggests that we should use a linear kernel, because the additional flexibility that will result from using a polynomial or radial kernel is unnecessary.
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{dat} \hlkwb{=} \hlkwd{data.frame}\hlstd{(}\hlkwc{x}\hlstd{=Khan}\hlopt{$}\hlstd{xtrain,}
+                 \hlkwc{y}\hlstd{=}\hlkwd{as.factor}\hlstd{(Khan}\hlopt{$}\hlstd{ytrain))}
+\hlstd{out} \hlkwb{=} \hlkwd{svm}\hlstd{(y}\hlopt{~}\hlstd{.,} \hlkwc{data}\hlstd{=dat,} \hlkwc{kernel}\hlstd{=}\hlstr{"linear"}\hlstd{,}
+          \hlkwc{cost}\hlstd{=}\hlnum{10}\hlstd{)}
+\hlkwd{summary}\hlstd{(out)}
+\end{alltt}
+\begin{verbatim}
+## 
+## Call:
+## svm(formula = y ~ ., data = dat, kernel = "linear", cost = 10)
+## 
+## 
+## Parameters:
+##    SVM-Type:  C-classification 
+##  SVM-Kernel:  linear 
+##        cost:  10 
+## 
+## Number of Support Vectors:  58
+## 
+##  ( 20 20 11 7 )
+## 
+## 
+## Number of Classes:  4 
+## 
+## Levels: 
+##  1 2 3 4
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
+
+We see that there are \textit{no} training errors. In fact, this is not surprising, because the large number of variables relative to the number of observations implies that it is easy to find hyperplanes that fully separate the classes. We are most interested not in the support vector classifier's performance on the training observations, but rather its performance on the test observations.
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{dat.te} \hlkwb{=} \hlkwd{data.frame}\hlstd{(}\hlkwc{x}\hlstd{=Khan}\hlopt{$}\hlstd{xtest,} \hlkwc{y}\hlstd{=}\hlkwd{as.factor}\hlstd{(Khan}\hlopt{$}\hlstd{ytest))}
+\hlstd{pred.te}\hlkwb{=}\hlkwd{predict}\hlstd{(out,} \hlkwc{newdata}\hlstd{=dat.te)}
+\hlkwd{table}\hlstd{(pred.te, dat.te}\hlopt{$}\hlstd{y)}
+\end{alltt}
+\begin{verbatim}
+##        
+## pred.te 1 2 3 4
+##       1 3 0 0 0
+##       2 0 6 2 0
+##       3 0 0 4 0
+##       4 0 0 0 5
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
+
+We see that using \texttt{cost=10} yields two test set errors on this data.
+
+
+\end{document}

@@ -1,0 +1,62 @@
+\documentclass[12pt]{article}
+ 
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amsthm,amssymb, mathtools}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{fixltx2e}
+\usepackage[shortlabels]{enumitem}
+ 
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\Q}{\mathbb{Q}}
+
+\newenvironment{theorem}[2][Theorem]{\begin{trivlist}
+\item[\hskip \labelsep {\bfseries #1}\hskip \labelsep {\bfseries #2.}]}{\end{trivlist}}
+\newenvironment{lemma}[2][Lemma]{\begin{trivlist}
+\item[\hskip \labelsep {\bfseries #1}\hskip \labelsep {\bfseries #2.}]}{\end{trivlist}}
+\newenvironment{exercise}[2][Exercise]{\begin{trivlist}
+\item[\hskip \labelsep {\bfseries #1}\hskip \labelsep {\bfseries #2.}]}{\end{trivlist}}
+\newenvironment{problem}[2][Problem]{\begin{trivlist}
+\item[\hskip \labelsep {\bfseries #1}\hskip \labelsep {\bfseries #2.}]}{\end{trivlist}}
+\newenvironment{question}[2][Question]{\begin{trivlist}
+\item[\hskip \labelsep {\bfseries #1}\hskip \labelsep {\bfseries #2.}]}{\end{trivlist}}
+\newenvironment{corollary}[2][Corollary]{\begin{trivlist}
+\item[\hskip \labelsep {\bfseries #1}\hskip \labelsep {\bfseries #2.}]}{\end{trivlist}}
+\newcommand{\textfrac}[2]{\dfrac{\text{#1}}{\text{#2}}}
+
+\begin{document}
+
+\title{Support Vector Machine Extension Project}
+
+\author{Chris Hayduk}
+\date{\today}
+
+\maketitle
+
+<<echo=F, results = 'hide', warning=FALSE, message=FALSE>>=
+# set the global chunk options
+opts_chunk$set(message=FALSE, # don't print R messages in pdf -- CHANGE TO FALSE WHEN SUBMITTING FINAL VERSION!!!
+               warning=FALSE) # don't print warnings in pdf -- CHANGE TO FALSE WHEN SUBMITTING FINAL VERSION!!!
+
+# load .RData files, .R files, etc.
+# R packages required
+suppressMessages(library(tidyverse, quietly=TRUE, warn.conflicts = FALSE, verbose=FALSE))
+suppressMessages(library(ISLR, quietly=TRUE, warn.conflicts = FALSE, verbose=FALSE))
+suppressMessages(library(splines, quietly=TRUE, warn.conflicts = FALSE, verbose=FALSE))
+suppressMessages(library(gam, quietly=TRUE, warn.conflicts = FALSE, verbose=FALSE))
+suppressMessages(library(akima, quietly=TRUE, warn.conflicts = FALSE, verbose=FALSE))
+suppressMessages(library(tree, quietly=TRUE, warn.conflicts = FALSE, verbose=FALSE))
+suppressMessages(library(MASS, quietly=TRUE, warn.conflicts = FALSE, verbose=FALSE))
+suppressMessages(library(randomForest, quietly=TRUE, warn.conflicts = FALSE, verbose=FALSE))
+suppressMessages(library(gbm, quietly=TRUE, warn.conflicts = FALSE, verbose=FALSE))
+suppressMessages(library(e1071, quietly=TRUE, warn.conflicts = FALSE, verbose=FALSE))
+suppressMessages(library(LiblineaR, quietly=TRUE, warn.conflicts = FALSE, verbose=FALSE))
+suppressMessages(library(ROCR, quietly=TRUE, warn.conflicts = FALSE, verbose=FALSE))
+@
+
+
+
+
+\end{document}
