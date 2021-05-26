@@ -56,7 +56,198 @@ suppressMessages(library(LiblineaR, quietly=TRUE, warn.conflicts = FALSE, verbos
 suppressMessages(library(ROCR, quietly=TRUE, warn.conflicts = FALSE, verbose=FALSE))
 @
 
+\section{Expanded Mathematical Background}
+
+In the book ``Introduction to Statistical Learning'', the mathematics behind support vector machines was mostly abstracted away. The authors tended to favor high-level overviews of the math, while focusing mostly on code and examples. In this section, I use the authors' second book, ``The Elements of Statistical Learning'', in order to provide a more stable foundation for the math behind SVMs.
+
+Recall that support vector classifiers fit an optimal separating hyperplane to a dataset. This hyperplane relied solely on ``support vectors'', which are points that landed inside the margin of the hyperplane, to calculate the separation. This decision boundary is always linear, but we can extend this method by enlarging the feature space using basis expansions such as polynomials or splines. In this way, we can fit a linear separating hyperplane in the enlarged space, which will result in a nonlinear boundary in the original space.
+
+Support vector machines (SVMs) build upon this idea. We allow the dimension of the enlarged space to get very large - even infinite in some cases. We start by selecting basis functions $$h_m(x) , m = 1, \ldots, M$$ Then we fit the classifier using the input features $$h(x_i) = (h_1(x_i), h_2(x_i), \ldots, h_M(x_i))$$ for $i = 1, \ldots, N$. We can represent the optimization problem and its solutions such that it only involves the input features via inner products. For certain choices of $h$, this inner product can be computed very cheaply. Now, we define the Lagrange dual function as follows,
+
+\begin{align}
+L_D = \sum_{i=1}^N \alpha_i - \frac{1}{2} \sum_{i=1}^N \sum_{i'=1}^N \alpha_i \alpha_{i'} y_i y_{i'} \langle h(x_i), h(x_{i'}) \rangle
+\end{align}
+where $\alpha_i, \alpha_{i'}$ are positive constraints for every $i$. The solution $f(x)$ can be written, 
+
+\begin{align}
+f(x) &= h(x)^T \beta + \beta_0 \nonumber \\
+&= \sum_{i=1}^N \alpha_i y_i \langle h(x), h(x_i) \rangle + \beta_0
+\end{align}
+
+We have that $\alpha_i, \beta_0$ can be determined by solving the equation $y_i f(x_i) = 1$ for all $x_i$ for which $0 < \alpha_i < C$, where $C$ is the cost parameter.
+
+Note that equations (1) and (2) only use $h(x_i)$ for all $i$ in the context of taking the inner product. Hence, we do not need to know the basis function explicitly. We simply need to know the inner product in the enlarged feature space. This is represented as the kernel function, $$K(x, x') = \langle h(x), h(x') \rangle$$ $K$ is a symmetric positive definite function. Some popular examples of $K$ in the SVM literature are as follows:
+
+\begin{enumerate}
+
+\item $d$th-Degree polynomial: $K(x, x') = (1 + \langle x, x' \rangle)^d$
+
+\item Radial basis: $K(x,x') = \exp(-\gamma ||x-x'||^2)$
+
+\item Neural network: $K(x, x') = \tanh(\kappa_1 \langle x, x' \rangle + \kappa_2)$
+
+\end{enumerate}
+
+Let us now consider an example where the feature space has two inputs, $X_1$ and $X_2$, and we have chosen a $2$nd-degree polynomial kernel. Then our kernel is given by,
+
+\begin{align*}
+K(X, X') &= (1 + \langle X, X' \rangle)^2\\
+&= (1 + X_1 X_1' + X_2 X_2')^2\\
+&= 1 + 2X_1X_1' + 2X_2X_2' + (X_1 X_1')^2 + (X_2 X_2')^2 + 2X_1 X_1' X_2 X_2'
+\end{align*}
+
+So we have that $M = 6$. We can choose $h_1(X) = 1$, $h_2(X) = \sqrt{2}X_1$, $h_3(X) = \sqrt{2} X_2$, $h_4(X) = X_1^2$, $h_5(X) = X_2^2$, and $h_6(X) = \sqrt{2}X_1 X_2$, then $K(X, X') = \langle h(X), h(X') \rangle$. Thus, the solution function is given by, $$\hat{f}(x) = \sum_{i=1}^N \hat{\alpha}_i y_i K(x, x_i) + \hat{\beta}_0$$
+
+The role of the $C$ parameter is clearer in the enlarged feature space because perfect separation in  this space is often possible. A large value of $C$ will lead to a wiggly overfit in the original feature space. A small $C$ encourages a small values of $||\beta||$, which makes $f(x)$ and thus the decision boundary smoother.
+
+\newpage
+
+\section{Data Analysis}
+
+Now that we have a bit stronger of a mathematical grounding for SVMs, we can shift our attention to applying the algorithm to a new data set. We will begin by using the \texttt{Smarket} data set from the \texttt{ISLR} package. We will attempt to classify the direction of a stock (whether it went up or down) based on the predictor variables.
+
+<<>>=
+#Load Smarket data
+attach(Smarket)
+names(Smarket)
+
+#Check dimensions
+dim(Smarket)
+
+#Show summary of data
+summary(Smarket)
+@
+
+This data set consists of percentage returns for the S\& P500 stock index over 1250 days, from the beginning of 2001 until the end of 2005. For each date, the percentage returns for each of the five previous trading days are recorded, \texttt{Lag1} through \texttt{Lag5}. The following are also recorded:
+\begin{itemize}
+\item \texttt{Volume} - the number of shares traded on the previous day, in billions
+\item \texttt{Today} - the percentage return on the date in question
+\item \texttt{Direction} - whether the stock went up or down
+\end{itemize}
+
+We will compare the performance of an SVM to that of logistic regression on this data set, so we will begin by fitting logistic regression. We will begin by creating a training set of all years prior to 2005. We will then test the algorithms on a test set of the 2005 stock data:
+
+<<>>=
+#Create vector of True and False values
+#Will use to subset training data
+train = (Year<2005)
+
+#Subset data for years before 2005
+training_data = Smarket[train,]
+
+#Get data for Year == 2005 for test data
+test_data = Smarket[!train,]
+
+#Display dimension of test data
+dim(test_data)
+
+#Get response variables for test data
+Direction.2005 = Direction[!train]
+@
+
+We will now train our logistic regression classifier:
+<<>>=
+#Fit GLM model to training data
+glm.fits = glm(Direction~Lag1 + Lag2 + Lag3 + Lag4 + Lag5 + Volume,
+               data = training_data, family = binomial)
+
+#Predict responses for test data
+glm.probs = predict(glm.fits, test_data, type="response")
+@
 
 
+Finally, let us compute the predictions for 2005 and compare them to the actual movements of the market over that time period:
 
+<<>>=
+#Create vector to contain GLM predictions
+glm.pred = rep("Down", 252)
+
+#Switch any entry where prob > 0.5 to classify as "Up"
+glm.pred[glm.probs>0.5] = "Up"
+
+#Display table of predictions vs actual values
+table(glm.pred, Direction.2005)
+
+#Percent correctly classified
+mean(glm.pred == Direction.2005)
+
+#Test error rate
+mean(glm.pred != Direction.2005)
+@
+
+We have that the test error rate is 52\%, which is worse than random guessing! We will now examine whether an SVM is able to do a better job. We will use the \texttt{tune()} function in order to select the best choice of the $\gamma$ and \texttt{cost} parameters for the SVM with radial kernel. We will use the radial kernel in order to capture any non-linearities that may arise in the stock data.
+
+<<>>=
+set.seed(1)
+
+#Optimize gamma and cost parameters for SVM
+tune.out = tune(svm, Direction ~ Lag1+Lag2+Lag3+Lag4+Lag5+Volume, 
+                data=training_data, kernel = "radial",
+                ranges = list(cost=c(0.1,1,10,100,1000),
+                              gamma=c(0.5,1,2,3,4)))
+
+#Summary of optimization
+summary(tune.out)
+
+#Choose the best model from the optimization
+svmfit = tune.out$best.model
+
+#Predict response variables from test_data
+svmpred= predict(svmfit, test_data)
+
+#Display predicted response vs actual response
+table(svmfit = svmpred, Direction.2005)
+
+#Compute the test error rate
+mean(svmpred != Direction.2005)
+@
+
+We see here that our SVM with a radial kernel has a test error of 47.2\%! While still a rather high figure, we have significantly improved over logistic regression with the same set of predictor variables, and now are able to perform better than random guessing. Hence, the SVM with a radial kernel must be capturing some inherent non-linearities in the stock data, which logistic regression was unable to model. However, let us examine our logistic regression model once again:
+
+<<>>=
+summary(glm.fits)
+@
+
+We see that the predictors are all non-significant, meaning we should likely remove some of them in order to improve the fit. \texttt{Lag1} and \texttt{Lag2} both have by far the lowest $p$-values of the predictors (though still far from significant), so let us try fitting the logistic regression and SVM with \texttt{Lag1} and \texttt{Lag2} as our only two predictors.
+
+<<>>=
+#Fit GLM model to training data with only 2 predictors
+glm.fits = glm(Direction~Lag1 + Lag2,
+               data = training_data, family = binomial)
+
+glm.probs = predict(glm.fits, test_data, type="response")
+
+glm.pred = rep("Down", 252)
+
+glm.pred[glm.probs>0.5] = "Up"
+
+table(glm.pred, Direction.2005)
+
+mean(glm.pred == Direction.2005)
+
+mean(glm.pred != Direction.2005)
+@
+
+We see now that the test error rate for logistic regression has fallen to 44\%! Let us perform the same analysis with the SVM:
+
+<<>>=
+tune.out = tune(svm, Direction ~ Lag1+Lag2, 
+                data=training_data, kernel = "radial",
+                ranges = list(cost=c(0.1,1,10,100,1000),
+                              gamma=c(0.5,1,2,3,4)))
+
+summary(tune.out)
+
+svmfit = tune.out$best.model
+
+svmpred= predict(svmfit, test_data)
+
+table(svmfit = svmpred, Direction.2005)
+
+mean(svmpred != Direction.2005)
+@
+
+Again, we see that the SVM outperforms logistic regression: this time with a test error rate of 40.9\%! We must also note that guessing ``Up'' for every data point in the test set would yield a test error rate of about 46\%. Hence, in both the SVM and logistic regression previously, guessing ``Up'' every time would have fared better. However, after adjusting to only using \texttt{Lag1} and \texttt{Lag2}, both the SVM and logistic regression outperform this mark - a very important error rate to surpass.
+
+Due to the consistently higher performance of our SVM with a radial kernel, it is quite likely that there are non-linearities in the \texttt{Smarket} data set. The SVM is able to model these non-linearities much more effectively than logistic regression, and so does a better job of classification.
 \end{document}

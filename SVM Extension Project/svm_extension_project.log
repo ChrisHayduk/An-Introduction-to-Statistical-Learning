@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.20 (MiKTeX 2.9.7140 64-bit) (preloaded format=pdflatex 2019.9.19)  1 MAY 2021 23:09
+This is pdfTeX, Version 3.14159265-2.6-1.40.20 (MiKTeX 2.9.7140 64-bit) (preloaded format=pdflatex 2019.9.19)  26 MAY 2021 16:29
 entering extended mode
 **./svm_extension_project.tex
 (svm_extension_project.tex
@@ -610,25 +610,114 @@ File: umsa.fd 2013/01/14 v3.01 AMS symbols A
 LaTeX Font Info:    Try loading font information for U+msb on input line 86.
 ("C:\Users\chris\AppData\Local\Programs\MiKTeX 2.9\tex/latex/amsfonts\umsb.fd"
 File: umsb.fd 2013/01/14 v3.01 AMS symbols B
-) [1
+)
+LaTeX Font Info:    External font `lmex10' loaded for size
+(Font)              <12> on input line 96.
+LaTeX Font Info:    External font `lmex10' loaded for size
+(Font)              <8> on input line 96.
+LaTeX Font Info:    External font `lmex10' loaded for size
+(Font)              <6> on input line 96.
+[1
 
-{C:/Users/chris/AppData/Local/MiKTeX/2.9/pdftex/config/pdftex.map}]
-(svm_extension_project.aux) ) 
+{C:/Users/chris/AppData/Local/MiKTeX/2.9/pdftex/config/pdftex.map}] [2]
+LaTeX Font Info:    Try loading font information for T1+lmtt on input line 138.
+
+
+("C:\Users\chris\AppData\Local\Programs\MiKTeX 2.9\tex/latex/lm\t1lmtt.fd"
+File: t1lmtt.fd 2009/10/30 v1.6 Font defs for Latin Modern
+)
+Package color Info: Redefining color shadecolor on input line 141.
+LaTeX Font Info:    Font shape `T1/lmtt/bx/n' in size <12> not available
+(Font)              Font shape `T1/lmtt/b/n' tried instead on input line 144.
+
+Overfull \hbox (5.6922pt too wide) in paragraph at lines 184--184
+[]\T1/lmtt/m/n/12 ##  Min.   :-4.922000   Min.   :-4.92200   Min.   :0.3561   M
+in.   :-4.922000[] 
+ []
+
+
+Overfull \hbox (5.6922pt too wide) in paragraph at lines 184--184
+[]\T1/lmtt/m/n/12 ##  1st Qu.:-0.640000   1st Qu.:-0.64000   1st Qu.:1.2574   1
+st Qu.:-0.639500[] 
+ []
+
+
+Overfull \hbox (5.71321pt too wide) in paragraph at lines 184--184
+[]\T1/lmtt/m/n/12 ##  Median : 0.038500   Median : 0.03850   Median :1.4229   M
+edian : 0.038500[] 
+ []
+
+
+Overfull \hbox (5.6992pt too wide) in paragraph at lines 184--184
+[]\T1/lmtt/m/n/12 ##  Mean   : 0.001636   Mean   : 0.00561   Mean   :1.4783   M
+ean   : 0.003138[] 
+ []
+
+
+Overfull \hbox (5.67819pt too wide) in paragraph at lines 184--184
+[]\T1/lmtt/m/n/12 ##  3rd Qu.: 0.596750   3rd Qu.: 0.59700   3rd Qu.:1.6417   3
+rd Qu.: 0.596750[] 
+ []
+
+
+Overfull \hbox (5.72021pt too wide) in paragraph at lines 184--184
+[]\T1/lmtt/m/n/12 ##  Max.   : 5.733000   Max.   : 5.73300   Max.   :3.1525   M
+ax.   : 5.733000[] 
+ []
+
+[3]
+LaTeX Font Info:    Try loading font information for TS1+lmr on input line 190.
+
+ ("C:\Users\chris\AppData\Local\Programs\MiKTeX 2.9\tex/latex/lm\ts1lmr.fd"
+File: ts1lmr.fd 2009/10/30 v1.6 Font defs for Latin Modern
+)
+Package color Info: Redefining color shadecolor on input line 198.
+Package color Info: Redefining color shadecolor on input line 225.
+Package color Info: Redefining color shadecolor on input line 241.
+[4]
+Package color Info: Redefining color shadecolor on input line 278.
+LaTeX Font Info:    Try loading font information for TS1+lmtt on input line 330
+.
+ ("C:\Users\chris\AppData\Local\Programs\MiKTeX 2.9\tex/latex/lm\ts1lmtt.fd"
+File: ts1lmtt.fd 2009/10/30 v1.6 Font defs for Latin Modern
+) [5] [6]
+Package color Info: Redefining color shadecolor on input line 360.
+Package color Info: Redefining color shadecolor on input line 398.
+ [7]
+Package color Info: Redefining color shadecolor on input line 436.
+ [8] [9] [10] (svm_extension_project.aux) ) 
 Here is how much of TeX's memory you used:
- 4736 strings out of 492895
- 70495 string characters out of 3123735
- 134935 words of memory out of 3000000
- 8543 multiletter control sequences out of 15000+200000
- 25988 words of font info for 35 fonts, out of 3000000 for 9000
+ 4878 strings out of 492895
+ 73120 string characters out of 3123735
+ 145935 words of memory out of 3000000
+ 8664 multiletter control sequences out of 15000+200000
+ 45673 words of font info for 57 fonts, out of 3000000 for 9000
  1141 hyphenation exceptions out of 8191
- 41i,6n,32p,290b,202s stack positions out of 5000i,500n,10000p,200000b,50000s
-{C:/Users/chris/AppData/Local/Programs/MiKTeX 2.9/
-fonts/enc/dvips/lm/lm-ec.enc}<C:/Users/chris/AppData/Local/Programs/MiKTeX 2.9/
-fonts/type1/public/lm/lmr12.pfb><C:/Users/chris/AppData/Local/Programs/MiKTeX 2
-.9/fonts/type1/public/lm/lmr17.pfb>
-Output written on svm_extension_project.pdf (1 page, 49309 bytes).
+ 41i,9n,32p,645b,286s stack positions out of 5000i,500n,10000p,200000b,50000s
+{C:/Users/chris/AppData/Local/Progra
+ms/MiKTeX 2.9/fonts/enc/dvips/lm/lm-ts1.enc}{C:/Users/chris/AppData/Local/Progr
+ams/MiKTeX 2.9/fonts/enc/dvips/lm/lm-ec.enc}{C:/Users/chris/AppData/Local/Progr
+ams/MiKTeX 2.9/fonts/enc/dvips/lm/lm-mathsy.enc}{C:/Users/chris/AppData/Local/P
+rograms/MiKTeX 2.9/fonts/enc/dvips/lm/lm-mathex.enc}{C:/Users/chris/AppData/Loc
+al/Programs/MiKTeX 2.9/fonts/enc/dvips/lm/lm-rm.enc}{C:/Users/chris/AppData/Loc
+al/Programs/MiKTeX 2.9/fonts/enc/dvips/lm/lm-mathit.enc}<C:/Users/chris/AppData
+/Local/Programs/MiKTeX 2.9/fonts/type1/public/lm/lmbx12.pfb><C:/Users/chris/App
+Data/Local/Programs/MiKTeX 2.9/fonts/type1/public/lm/lmex10.pfb><C:/Users/chris
+/AppData/Local/Programs/MiKTeX 2.9/fonts/type1/public/lm/lmmi12.pfb><C:/Users/c
+hris/AppData/Local/Programs/MiKTeX 2.9/fonts/type1/public/lm/lmmi8.pfb><C:/User
+s/chris/AppData/Local/Programs/MiKTeX 2.9/fonts/type1/public/lm/lmr12.pfb><C:/U
+sers/chris/AppData/Local/Programs/MiKTeX 2.9/fonts/type1/public/lm/lmr17.pfb><C
+:/Users/chris/AppData/Local/Programs/MiKTeX 2.9/fonts/type1/public/lm/lmr8.pfb>
+<C:/Users/chris/AppData/Local/Programs/MiKTeX 2.9/fonts/type1/public/lm/lmsy10.
+pfb><C:/Users/chris/AppData/Local/Programs/MiKTeX 2.9/fonts/type1/public/lm/lms
+y6.pfb><C:/Users/chris/AppData/Local/Programs/MiKTeX 2.9/fonts/type1/public/lm/
+lmsy8.pfb><C:/Users/chris/AppData/Local/Programs/MiKTeX 2.9/fonts/type1/public/
+lm/lmtk10.pfb><C:/Users/chris/AppData/Local/Programs/MiKTeX 2.9/fonts/type1/pub
+lic/lm/lmtt12.pfb><C:/Users/chris/AppData/Local/Programs/MiKTeX 2.9/fonts/type1
+/public/lm/lmtti10.pfb>
+Output written on svm_extension_project.pdf (10 pages, 233216 bytes).
 PDF statistics:
- 15 PDF objects out of 1000 (max. 8388607)
+ 99 PDF objects out of 1000 (max. 8388607)
  0 named destinations out of 1000 (max. 500000)
  1 words of extra memory for PDF output out of 10000 (max. 10000000)
 
